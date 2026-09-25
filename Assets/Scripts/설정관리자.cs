@@ -32,7 +32,6 @@ public class 설정관리자 : MonoBehaviour
     [Header("급식실")]
     [SerializeField] private bool 급식실열림;
     [SerializeField, Range(1, 절대최대인원)] private int 최대인원 = 절대최대인원;
-    [SerializeField, Range(1, 5)] private int 자리수 = 1;
     [SerializeField] private bool 남은시간표시 = true;
 
     [Header("소리")]
@@ -48,7 +47,6 @@ public class 설정관리자 : MonoBehaviour
     public float 틱배율 => 틱속도;
     public bool 열림 => 급식실열림;
     public int 최대학생수 => 최대인원;
-    public int 활성자리수 => 자리수;
     public bool 남은시간을표시함 => 남은시간표시;
     public float 배경음크기 => 배경음볼륨;
     public float 학생효과음크기 => 학생효과음볼륨;
@@ -70,6 +68,18 @@ public class 설정관리자 : MonoBehaviour
     public void 큐종류설정(int 값)
     {
         큐종류 = (큐_타입)Mathf.Clamp(값, 0, Enum.GetValues(typeof(큐_타입)).Length - 1);
+        설정변경?.Invoke();
+    }
+
+    public void 라운드로빈퀀텀설정(string 값)
+    {
+        if (!float.TryParse(값, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.CurrentCulture, out float 시간) &&
+            !float.TryParse(값, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out 시간))
+            return;
+
+        라운드로빈퀀텀 = Mathf.Max(0.1f, 시간);
         설정변경?.Invoke();
     }
 
@@ -97,12 +107,6 @@ public class 설정관리자 : MonoBehaviour
         설정변경?.Invoke();
     }
 
-    public void 자리수설정(float 값)
-    {
-        자리수 = Mathf.Clamp(Mathf.RoundToInt(값), 1, 5);
-        설정변경?.Invoke();
-    }
-
     public void 남은시간표시설정(bool 값)
     {
         남은시간표시 = 값;
@@ -121,6 +125,5 @@ public class 설정관리자 : MonoBehaviour
     {
         라운드로빈퀀텀 = Mathf.Max(0.1f, 라운드로빈퀀텀);
         최대인원 = Mathf.Clamp(최대인원, 1, 절대최대인원);
-        자리수 = Mathf.Clamp(자리수, 1, 5);
     }
 }

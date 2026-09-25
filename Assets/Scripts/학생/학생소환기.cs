@@ -33,7 +33,7 @@ public class 학생소환기 : MonoBehaviour
     [SerializeField] private List<계급이미지> 계급별이미지 = new();
     [SerializeField] private Vector2 먹는시간범위 = new Vector2(2f, 10f);
     [SerializeField, Min(0f)] private float 아래쪽등장거리 = 2f;
-    [SerializeField, Min(0.1f)] private float 동시소환간격 = 1.8f;
+    [SerializeField, Min(0.1f)] private float 동시소환간격 = 0.9f;
 
     private 학생이름목록 이름목록 = new();
     private readonly HashSet<학생계급> 소환중인특수계급 = new();
@@ -42,6 +42,7 @@ public class 학생소환기 : MonoBehaviour
 
     private void Awake()
     {
+        소환할계급 = (학생계급)Mathf.Clamp((int)소환할계급, 1, 5);
         이름불러오기();
     }
 

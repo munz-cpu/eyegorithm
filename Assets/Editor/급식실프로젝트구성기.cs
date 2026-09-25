@@ -89,7 +89,7 @@ public static class 급식실프로젝트구성기
         학생소환기 소환기 = 시스템.AddComponent<학생소환기>();
 
         Transform 소환위치 = 위치만들기("학생 소환 위치", 위치들.transform, new Vector3(-7f, -3.1f));
-        Transform 줄시작 = 위치만들기("줄 시작 위치", 위치들.transform, new Vector3(-4.2f, -2.2f));
+        Transform 줄시작 = 위치만들기("줄 시작 위치", 위치들.transform, new Vector3(-4.7f, 0.24f));
         Transform 입구 = 위치만들기("급식실 입구", 위치들.transform, new Vector3(-4.88f, 1.54f));
         Transform 입구안쪽 = 위치만들기("급식실 입구 안쪽", 위치들.transform, new Vector3(-4.88f, 2.13f));
         Transform 출구 = 위치만들기("급식실 출구", 위치들.transform, new Vector3(4.45f, 1.54f));
@@ -239,11 +239,10 @@ public static class 급식실프로젝트구성기
         Slider 최대인원 = 슬라이더만들기(패널.transform, "최대 사람 수", 1f, 15f, 15f, -396f, true);
         텍스트행(패널.transform, "최대 사람 수", -396f);
         TMP_Text 최대인원값 = 값텍스트(패널.transform, "최대 인원 값", -396f);
-        Slider 자리수 = 슬라이더만들기(패널.transform, "자리 수", 1f, 5f, 1f, -466f, true);
-        텍스트행(패널.transform, "자리 수", -466f);
-        TMP_Text 자리수값 = 값텍스트(패널.transform, "자리 수 값", -466f);
-        Toggle 남은시간 = 토글만들기(패널.transform, "남은 실행시간 표시", true, -536f);
-        텍스트행(패널.transform, "남은 실행시간 표시", -536f);
+        Toggle 남은시간 = 토글만들기(패널.transform, "남은 실행시간 표시", true, -466f);
+        텍스트행(패널.transform, "남은 실행시간 표시", -466f);
+        GameObject 시간행 = 라운드로빈시간행만들기(패널.transform, out TMP_InputField 시간입력);
+        시간행.SetActive(false);
 
         설정UI = 부모.gameObject.AddComponent<설정창UI>();
         직렬화연결(설정UI, new Dictionary<string, Object>
@@ -253,18 +252,42 @@ public static class 급식실프로젝트구성기
             ["닫기버튼"] = 닫기,
             ["설정패널"] = 패널,
             ["큐드롭다운"] = 큐,
+            ["라운드로빈시간행"] = 시간행,
+            ["라운드로빈시간입력"] = 시간입력,
             ["배경음슬라이더"] = 배경음,
             ["학생효과음슬라이더"] = 효과음,
             ["틱속도슬라이더"] = 속도,
             ["최대인원슬라이더"] = 최대인원,
-            ["자리수슬라이더"] = 자리수,
             ["남은시간토글"] = 남은시간,
             ["틱속도값"] = 속도값,
             ["최대인원값"] = 최대인원값,
-            ["자리수값"] = 자리수값
         });
 
         return 패널;
+    }
+
+    private static GameObject 라운드로빈시간행만들기(Transform 부모, out TMP_InputField 입력)
+    {
+        GameObject 행 = 새오브젝트("RR 시간 행", 부모, typeof(RectTransform));
+        배치(행.GetComponent<RectTransform>(), new Vector2(20f, -536f), new Vector2(520f, 50f), new Vector2(0f, 1f));
+
+        TMP_Text 라벨 = 텍스트만들기(행.transform, "RR 시간 라벨", "RR 시간 단위 (초)", 23f, TextAlignmentOptions.MidlineLeft);
+        배치(라벨.rectTransform, new Vector2(8f, 0f), new Vector2(220f, 48f), new Vector2(0f, 1f));
+
+        GameObject 입력오브젝트 = TMP_DefaultControls.CreateInputField(기본리소스());
+        입력오브젝트.name = "RR 시간 입력";
+        입력오브젝트.transform.SetParent(행.transform, false);
+        배치(입력오브젝트.GetComponent<RectTransform>(), new Vector2(230f, 0f), new Vector2(270f, 48f), new Vector2(0f, 1f));
+        입력 = 입력오브젝트.GetComponent<TMP_InputField>();
+        입력.contentType = TMP_InputField.ContentType.DecimalNumber;
+        입력.SetTextWithoutNotify("2");
+        foreach (TMP_Text 텍스트 in 입력오브젝트.GetComponentsInChildren<TMP_Text>(true))
+        {
+            텍스트.fontSize = 22f;
+            폰트설정(텍스트);
+        }
+
+        return 행;
     }
 
     private static Transform[] 좌석만들기(Transform 부모)
@@ -296,6 +319,9 @@ public static class 급식실프로젝트구성기
         객체설정(직렬화, "학생이동범위", 이동범위);
         객체설정(직렬화, "경고UI", 경고);
         객체설정(직렬화, "줄시작점", 줄시작);
+        직렬화.FindProperty("줄방향").vector2Value = Vector2.left;
+        직렬화.FindProperty("한줄인원").intValue = 5;
+        직렬화.FindProperty("줄행간격").floatValue = 1.25f;
         객체설정(직렬화, "급식실입구", 입구);
         객체설정(직렬화, "급식실입구안쪽", 입구안쪽);
         객체설정(직렬화, "급식실출구", 출구);

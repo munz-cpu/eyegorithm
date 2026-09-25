@@ -13,17 +13,17 @@ public class 설정창UI : MonoBehaviour
 
     [Header("입력")]
     [SerializeField] private TMP_Dropdown 큐드롭다운;
+    [SerializeField] private GameObject 라운드로빈시간행;
+    [SerializeField] private TMP_InputField 라운드로빈시간입력;
     [SerializeField] private Slider 배경음슬라이더;
     [SerializeField] private Slider 학생효과음슬라이더;
     [SerializeField] private Slider 틱속도슬라이더;
     [SerializeField] private Slider 최대인원슬라이더;
-    [SerializeField] private Slider 자리수슬라이더;
     [SerializeField] private Toggle 남은시간토글;
 
     [Header("현재 값")]
     [SerializeField] private TMP_Text 틱속도값;
     [SerializeField] private TMP_Text 최대인원값;
-    [SerializeField] private TMP_Text 자리수값;
 
     private void Awake()
     {
@@ -44,6 +44,8 @@ public class 설정창UI : MonoBehaviour
 
         if (큐드롭다운 != null)
             큐드롭다운.onValueChanged.AddListener(설정.큐종류설정);
+        if (라운드로빈시간입력 != null)
+            라운드로빈시간입력.onEndEdit.AddListener(라운드로빈시간확정);
         if (배경음슬라이더 != null)
             배경음슬라이더.onValueChanged.AddListener(설정.배경음볼륨설정);
         if (학생효과음슬라이더 != null)
@@ -52,8 +54,6 @@ public class 설정창UI : MonoBehaviour
             틱속도슬라이더.onValueChanged.AddListener(설정.틱속도설정);
         if (최대인원슬라이더 != null)
             최대인원슬라이더.onValueChanged.AddListener(설정.최대인원설정);
-        if (자리수슬라이더 != null)
-            자리수슬라이더.onValueChanged.AddListener(설정.자리수설정);
         if (남은시간토글 != null)
             남은시간토글.onValueChanged.AddListener(설정.남은시간표시설정);
         if (설정 != null)
@@ -72,6 +72,8 @@ public class 설정창UI : MonoBehaviour
 
         if (큐드롭다운 != null)
             큐드롭다운.onValueChanged.RemoveListener(설정.큐종류설정);
+        if (라운드로빈시간입력 != null)
+            라운드로빈시간입력.onEndEdit.RemoveListener(라운드로빈시간확정);
         if (배경음슬라이더 != null)
             배경음슬라이더.onValueChanged.RemoveListener(설정.배경음볼륨설정);
         if (학생효과음슬라이더 != null)
@@ -80,8 +82,6 @@ public class 설정창UI : MonoBehaviour
             틱속도슬라이더.onValueChanged.RemoveListener(설정.틱속도설정);
         if (최대인원슬라이더 != null)
             최대인원슬라이더.onValueChanged.RemoveListener(설정.최대인원설정);
-        if (자리수슬라이더 != null)
-            자리수슬라이더.onValueChanged.RemoveListener(설정.자리수설정);
         if (남은시간토글 != null)
             남은시간토글.onValueChanged.RemoveListener(설정.남은시간표시설정);
         if (설정 != null)
@@ -100,6 +100,12 @@ public class 설정창UI : MonoBehaviour
             설정패널.SetActive(false);
     }
 
+    private void 라운드로빈시간확정(string 값)
+    {
+        설정.라운드로빈퀀텀설정(값);
+        라운드로빈시간입력.SetTextWithoutNotify(설정.퀀텀.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+    }
+
     private void 값표시갱신()
     {
         if (설정 == null)
@@ -107,6 +113,10 @@ public class 설정창UI : MonoBehaviour
 
         if (큐드롭다운 != null)
             큐드롭다운.SetValueWithoutNotify((int)설정.큐종류값);
+        if (라운드로빈시간행 != null)
+            라운드로빈시간행.SetActive(설정.큐종류값 == 큐_타입.라운드로빈);
+        if (라운드로빈시간입력 != null && !라운드로빈시간입력.isFocused)
+            라운드로빈시간입력.SetTextWithoutNotify(설정.퀀텀.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
         if (배경음슬라이더 != null)
             배경음슬라이더.SetValueWithoutNotify(설정.배경음크기);
         if (학생효과음슬라이더 != null)
@@ -115,15 +125,11 @@ public class 설정창UI : MonoBehaviour
             틱속도슬라이더.SetValueWithoutNotify(설정.틱배율);
         if (최대인원슬라이더 != null)
             최대인원슬라이더.SetValueWithoutNotify(설정.최대학생수);
-        if (자리수슬라이더 != null)
-            자리수슬라이더.SetValueWithoutNotify(설정.활성자리수);
         if (남은시간토글 != null)
             남은시간토글.SetIsOnWithoutNotify(설정.남은시간을표시함);
         if (틱속도값 != null)
             틱속도값.text = $"{설정.틱배율:0.00}x";
         if (최대인원값 != null)
             최대인원값.text = $"{설정.최대학생수}명";
-        if (자리수값 != null)
-            자리수값.text = $"{설정.활성자리수}자리";
     }
 }
