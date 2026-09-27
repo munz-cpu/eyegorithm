@@ -10,6 +10,7 @@ public class 쪼물쪼물 : MonoBehaviour
     [SerializeField] private float bounceSpeed = 10f;
     [SerializeField] private float tiltAngle = 8f;
     [SerializeField] private float squashAmount = 0.08f;
+    [SerializeField] private AudioClip 효과음;
 
     private Vector3 startPosition;
     private Vector3 startScale;
@@ -21,8 +22,11 @@ public class 쪼물쪼물 : MonoBehaviour
 
     public Vector3 BasePosition => startPosition;
 
+    AudioSource audioSource;
+
     private void Awake()
     {
+        audioSource = GetComponent<AudioSource>();
         startPosition = transform.localPosition;
         startScale = transform.localScale;
         startRotation = transform.localRotation;
@@ -40,6 +44,8 @@ public class 쪼물쪼물 : MonoBehaviour
         float bounce = Mathf.Abs(wave) * bounceHeight * blend;
         float tilt = wave * tiltAngle * blend;
         float squash = Mathf.Abs(wave) * squashAmount * blend;
+        
+        if (!audioSource.isPlaying&&효과음) audioSource.PlayOneShot(효과음);
 
         transform.localPosition = startPosition + Vector3.up * bounce;
 

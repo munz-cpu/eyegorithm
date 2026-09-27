@@ -238,8 +238,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 2.8
+  m_fontSizeBase: 2.8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -297,6 +297,7 @@ GameObject:
   - component: {fileID: 4284196389144493339}
   - component: {fileID: 769879053244953748}
   - component: {fileID: 2299486453095940989}
+  - component: {fileID: 6179402720752535148}
   m_Layer: 0
   m_Name: "\uD559\uC0DD\uC0DD\uAE40\uC0C8"
   m_TagString: Untagged
@@ -396,6 +397,104 @@ MonoBehaviour:
   bounceSpeed: 10
   tiltAngle: 8
   squashAmount: 0.08
+  "\uD6A8\uACFC\uC74C": {fileID: 0}
+--- !u!82 &6179402720752535148
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2503798952082779519}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &4215533916744114592
 GameObject:
   m_ObjectHideFlags: 0
@@ -430,8 +529,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.214}
-  m_SizeDelta: {x: 12.155, y: 2.0391}
+  m_AnchoredPosition: {x: 0, y: 0.82}
+  m_SizeDelta: {x: 4, y: 0.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &1745331160836764215
 MeshRenderer:
@@ -529,8 +628,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 3.2
+  m_fontSizeBase: 3.2
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -713,7 +812,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: "Assembly-CSharp::\uBC30\uACE0\uD30C"
   "\uBD88\uB9CC\uC9C0\uC18D\uC2DC\uAC04": 0.5
-  "\uBD88\uB9CC\uD6A8\uACFC\uC74C": {fileID: 8300000, guid: 8cec9b394163aac4b8ad2e5f77a59bda, type: 3}
+  "\uBD88\uB9CC\uD6A8\uACFC\uC74C": {fileID: 8300000, guid: 78197ded64455444c919b75e553038c7, type: 3}
   "\uCC98\uC74C\uCFE8": 5
   "\uCFE8": {x: 5, y: 10}
 --- !u!82 &401416626776083891
@@ -828,8 +927,10 @@ MonoBehaviour:
   "\uACC4\uAE09": 1
   "\uC18C\uC694\uC2DC\uAC04": 3
   "\uD559\uC0DD\uC774\uB984": "\uC544\uBB34\uAC1C"
+  "\uB098\uC774": 8
   "\uD559\uC0DD\uC774\uBBF8\uC9C0": {fileID: 769879053244953748}
   "\uC774\uB984\uD45C": {fileID: 2571887299164416029}
   "\uB0A8\uC740\uC2DC\uAC04\uD45C": {fileID: 5562871797419769346}
+  "\uD06C\uAE30\uBC30\uC728": 0.78
   "\uBA39\uB294\uC2DC\uAC04\uBC94\uC704": {x: 2, y: 10}
   "\uAC00\uB85C\uD06C\uAE30\uBC94\uC704": {x: 0.75, y: 1.8}

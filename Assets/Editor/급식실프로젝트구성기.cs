@@ -30,6 +30,28 @@ public static class 급식실프로젝트구성기
         구성(true);
     }
 
+    [MenuItem("Eyegorithm/전체 불만지수 표시 추가")]
+    public static void 불만지수표시추가()
+    {
+        Scene 현재씬 = SceneManager.GetActiveScene();
+        if (EditorApplication.isPlayingOrWillChangePlaymode || 현재씬.path != 씬경로)
+            return;
+
+        GameObject UI루트 = GameObject.Find($"{시스템이름}/급식실 UI");
+        급식실관리자 급식실 = GameObject.Find($"{시스템이름}/시스템")?.GetComponent<급식실관리자>();
+        급식실상태UI 상태UI = UI루트?.GetComponent<급식실상태UI>();
+        if (상태UI == null || 급식실 == null)
+            return;
+
+        TMP_Text 문구 = 불만지수문구만들기(UI루트.transform);
+        SerializedObject 직렬화 = new(상태UI);
+        객체설정(직렬화, "급식실", 급식실);
+        객체설정(직렬화, "불만지수문구", 문구);
+        직렬화.ApplyModifiedPropertiesWithoutUndo();
+        EditorSceneManager.MarkSceneDirty(현재씬);
+        EditorSceneManager.SaveScene(현재씬);
+    }
+
     public static void 배치구성()
     {
         EditorSceneManager.OpenScene(씬경로, OpenSceneMode.Single);
@@ -186,6 +208,8 @@ public static class 급식실프로젝트구성기
         TMP_Dropdown 계급드롭다운 = 드롭다운만들기(UI루트.transform, "소환 계급 드롭다운", new[] { "1학년", "2학년", "3학년", "학생회장", "교장선생님" }, new Vector2(300f, 34f), new Vector2(230f, 58f));
         Button 설정버튼 = 버튼만들기(UI루트.transform, "설정 열기 버튼", "설정", new Vector2(-32f, 34f), new Vector2(110f, 58f), new Vector2(1f, 0f), 보조색);
 
+        TMP_Text 불만문구 = 불만지수문구만들기(UI루트.transform);
+
         GameObject 경고 = 패널만들기(UI루트.transform, "경고 메시지", new Vector2(0f, -38f), new Vector2(760f, 64f), new Vector2(0.5f, 1f), new Color(0.65f, 0.12f, 0.12f, 0.94f));
         CanvasGroup 경고그룹 = 경고.AddComponent<CanvasGroup>();
         TMP_Text 경고문구 = 텍스트만들기(경고.transform, "경고 문구", "경고", 28f, TextAlignmentOptions.Center);
@@ -203,8 +227,10 @@ public static class 급식실프로젝트구성기
         직렬화연결(상태UI, new Dictionary<string, Object>
         {
             ["설정"] = 설정,
+            ["급식실"] = 급식실,
             ["열기닫기버튼"] = 열기버튼,
-            ["버튼문구"] = 열기버튼.GetComponentInChildren<TMP_Text>()
+            ["버튼문구"] = 열기버튼.GetComponentInChildren<TMP_Text>(),
+            ["불만지수문구"] = 불만문구
         });
 
         학생소환UI 소환UI = UI루트.AddComponent<학생소환UI>();
@@ -217,6 +243,22 @@ public static class 급식실프로젝트구성기
 
         설정패널.SetActive(false);
         return UI루트;
+    }
+
+    private static TMP_Text 불만지수문구만들기(Transform UI루트)
+    {
+        Transform 기존패널 = UI루트.Find("전체 불만지수");
+        GameObject 패널 = 기존패널 != null
+            ? 기존패널.gameObject
+            : 패널만들기(UI루트, "전체 불만지수", new Vector2(24f, -24f), new Vector2(350f, 60f), new Vector2(0f, 1f), 진한색);
+        패널.GetComponent<Image>().raycastTarget = false;
+
+        TMP_Text 문구 = 패널.transform.Find("불만지수 문구")?.GetComponent<TMP_Text>();
+        if (문구 == null)
+            문구 = 텍스트만들기(패널.transform, "불만지수 문구", "전체 불만지수: 0", 26f, TextAlignmentOptions.MidlineLeft);
+        문구.raycastTarget = false;
+        전체채우기(문구.rectTransform, new Vector2(16f, 6f));
+        return 문구;
     }
 
     private static GameObject 설정패널만들기(Transform 부모, 설정관리자 설정, Button 열기버튼, out 설정창UI 설정UI)
@@ -318,6 +360,8 @@ public static class 급식실프로젝트구성기
         객체설정(직렬화, "설정", 설정);
         객체설정(직렬화, "학생이동범위", 이동범위);
         객체설정(직렬화, "경고UI", 경고);
+        객체설정(직렬화, "퇴학효과음1", AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/소리/효과음/너퇴학.mp3"));
+        객체설정(직렬화, "퇴학효과음2", AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/소리/효과음/진짜이러기야.mp3"));
         객체설정(직렬화, "줄시작점", 줄시작);
         직렬화.FindProperty("줄방향").vector2Value = Vector2.left;
         직렬화.FindProperty("한줄인원").intValue = 5;
@@ -349,8 +393,13 @@ public static class 급식실프로젝트구성기
         {
             SerializedProperty 항목 = 목록.GetArrayElementAtIndex(i);
             항목.FindPropertyRelative("계급").enumValueIndex = i;
-            항목.FindPropertyRelative("이미지").objectReferenceValue = 기본이미지;
+            SerializedProperty 이미지 = 항목.FindPropertyRelative("이미지");
+            if (이미지.objectReferenceValue == null)
+                이미지.objectReferenceValue = 기본이미지;
         }
+        SerializedProperty 중단효과음 = 직렬화.FindProperty("라운드로빈중단효과음");
+        if (중단효과음.objectReferenceValue == null)
+            중단효과음.objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/소리/효과음/남자 비명.mp3");
         직렬화.ApplyModifiedPropertiesWithoutUndo();
     }
 

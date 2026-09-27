@@ -24,6 +24,17 @@ public class 불만 : MonoBehaviour
         hideRoutine = StartCoroutine(좀있다숨겨(sec));
     }
 
+    public void 숨기기()
+    {
+        if (hideRoutine != null)
+        {
+            StopCoroutine(hideRoutine);
+            hideRoutine = null;
+        }
+
+        spriteRenderer.enabled = false;
+    }
+
     // 정해진 시간이 지나면 불만 표시를 다시 숨긴다.
     private IEnumerator 좀있다숨겨(float sec=1f)
     {

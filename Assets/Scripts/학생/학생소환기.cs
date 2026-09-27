@@ -8,6 +8,7 @@ public class 계급이미지
 {
     public 학생계급 계급;
     public Sprite 이미지;
+    public Sprite 라운드로빈중단이미지;
 }
 
 [Serializable]
@@ -31,6 +32,8 @@ public class 학생소환기 : MonoBehaviour
     [Header("학생 설정")]
     [SerializeField] private 학생계급 소환할계급 = 학생계급.일학년;
     [SerializeField] private List<계급이미지> 계급별이미지 = new();
+    [SerializeField] private AudioClip 라운드로빈중단효과음;
+    [SerializeField, Min(0f)] private float 중단이미지지속시간 = 0.7f;
     [SerializeField] private Vector2 먹는시간범위 = new Vector2(2f, 10f);
     [SerializeField, Min(0f)] private float 아래쪽등장거리 = 2f;
     [SerializeField, Min(0.1f)] private float 동시소환간격 = 0.9f;
@@ -77,9 +80,12 @@ public class 학생소환기 : MonoBehaviour
         Vector3 등장목표 = 소환위치.position + Vector3.right * (소환자리 * 동시소환간격);
         Vector3 시작위치 = 등장목표 + Vector3.down * 아래쪽등장거리;
         학생정보 학생 = Instantiate(학생프리팹, 시작위치, Quaternion.identity, 학생부모);
+        학생.급식실설정(급식실);
+        학생.GetComponent<배고파>()?.급식실설정(급식실);
         float 최소 = Mathf.Min(먹는시간범위.x, 먹는시간범위.y);
         float 최대 = Mathf.Max(먹는시간범위.x, 먹는시간범위.y);
         학생.초기화(소환할계급, 무작위이름(), UnityEngine.Random.Range(최소, 최대), 계급이미지찾기(소환할계급));
+        학생.라운드로빈중단연출설정(중단이미지찾기(소환할계급), 라운드로빈중단효과음, 중단이미지지속시간);
         학생.이동기?.이동범위설정(이동범위);
         학생.이동기?.속도배율설정(설정 != null ? 설정.틱배율 : 1f);
         소환중인원++;
@@ -154,6 +160,12 @@ public class 학생소환기 : MonoBehaviour
     {
         계급이미지 항목 = 계급별이미지.Find(값 => 값 != null && 값.계급 == 계급);
         return 항목 != null ? 항목.이미지 : null;
+    }
+
+    private Sprite 중단이미지찾기(학생계급 계급)
+    {
+        계급이미지 항목 = 계급별이미지.Find(값 => 값 != null && 값.계급 == 계급);
+        return 항목 != null ? 항목.라운드로빈중단이미지 : null;
     }
 
     private static string 계급이름(학생계급 계급)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,13 @@ public class 급식실관리자 : MonoBehaviour
     [SerializeField] private 설정관리자 설정;
     [SerializeField] private Collider2D 학생이동범위;
     [SerializeField] private 경고메시지UI 경고UI;
+
+    [Header("퇴학 효과음")]
+    [SerializeField] private AudioClip 퇴학효과음1;
+    [SerializeField] private AudioClip 퇴학효과음2;
+    [SerializeField, Min(0f)] private float 두번째효과음대기시간 = 0.5f;
+    [SerializeField, Min(0f)] private float 사라지기전대기시간 = 0.5f;
+    [SerializeField, Min(0.01f)] private float 퇴학페이드시간 = 0.5f;
 
     [Header("이동 위치")]
     [SerializeField] private Transform 줄시작점;
@@ -30,13 +38,20 @@ public class 급식실관리자 : MonoBehaviour
     private bool[] 자리사용중;
     private long 다음도착순서;
     private bool 입장처리중;
+    private int 전체불만지수;
+    private AudioSource 퇴학효과음소스;
 
     public int 현재인원 => 전체학생.Count;
+    public int 불만지수 => 전체불만지수;
     public bool 열림 => 설정 != null && 설정.열림;
+    public event Action<int> 불만지수변경;
 
     private void Awake()
     {
         자리사용중 = new bool[자리위치.Length];
+        퇴학효과음소스 = gameObject.AddComponent<AudioSource>();
+        퇴학효과음소스.playOnAwake = false;
+        퇴학효과음소스.spatialBlend = 0f;
     }
 
     private void OnEnable()
@@ -82,7 +97,9 @@ public class 급식실관리자 : MonoBehaviour
             i++;
         }
 
-        if (열림 && !입장처리중 && 대기열.인원수 > 0 && 빈자리찾기() >= 0)
+        // 앞 학생이 자리를 비운 뒤에만 다음 학생을 입장시킨다.
+        if (열림 && !입장처리중 && 대기열.인원수 > 0 &&
+            !Array.Exists(자리사용중, 사용중 => 사용중) && 빈자리찾기() >= 0)
             StartCoroutine(다음학생입장());
     }
 
@@ -110,6 +127,31 @@ public class 급식실관리자 : MonoBehaviour
         줄정렬();
     }
 
+    public void 퇴학처리(학생정보 학생)
+    {
+        if (학생 == null || 학생.퇴학중임)
+            return;
+
+        if (퇴학효과음1 != null)
+            퇴학효과음소스.PlayOneShot(퇴학효과음1);
+        학생.퇴학연출시작();
+        학생등록해제(학생);
+        경고UI?.크게표시("너 퇴학");
+        StartCoroutine(퇴학후속연출(학생));
+    }
+
+    private IEnumerator 퇴학후속연출(학생정보 학생)
+    {
+        yield return new WaitForSeconds(두번째효과음대기시간);
+        if (학생 == null)
+            yield break;
+        if (퇴학효과음2 != null)
+            퇴학효과음소스.PlayOneShot(퇴학효과음2);
+        yield return new WaitForSeconds(사라지기전대기시간);
+        if (학생 != null)
+            학생.퇴학페이드시작(퇴학페이드시간);
+    }
+
     public bool 특정계급존재(학생계급 계급)
     {
         return 전체학생.Exists(학생 => 학생 != null && 학생.계급값 == 계급);
@@ -121,6 +163,12 @@ public class 급식실관리자 : MonoBehaviour
             경고UI.표시(내용);
         else
             Debug.LogWarning(내용);
+    }
+
+    public void 불만추가()
+    {
+        전체불만지수++;
+        불만지수변경?.Invoke(전체불만지수);
     }
 
     private void 급식실상태적용(bool 열렸음)
@@ -161,6 +209,9 @@ public class 급식실관리자 : MonoBehaviour
     {
         if (설정 == null)
             return;
+
+        if (퇴학효과음소스 != null)
+            퇴학효과음소스.volume = 설정.학생효과음크기;
 
         foreach (학생정보 학생 in 전체학생)
         {
@@ -274,6 +325,12 @@ public class 급식실관리자 : MonoBehaviour
         yield return 목표까지이동(학생, new Vector3(자리.x, 입구안쪽.y, 자리.z));
         yield return 목표까지이동(학생, 자리);
 
+        if (학생 == null)
+        {
+            입장처리중 = false;
+            yield break;
+        }
+
         자리사용중[자리번호] = true;
         입장처리중 = false;
         StartCoroutine(식사처리(학생, 자리번호));
@@ -301,6 +358,9 @@ public class 급식실관리자 : MonoBehaviour
             자리사용중[자리번호] = false;
             yield break;
         }
+
+        if (설정.큐종류값 == 큐_타입.라운드로빈 && 학생.남은시간 > 0f)
+            학생.라운드로빈중단연출();
 
         Vector3 출구 = 급식실출구 != null
             ? 급식실출구.position
@@ -387,5 +447,8 @@ public class 급식실관리자 : MonoBehaviour
         줄행간격 = Mathf.Max(0.8f, 줄행간격);
         학생사이여백 = Mathf.Max(0f, 학생사이여백);
         이동제한시간 = Mathf.Max(0.1f, 이동제한시간);
+        퇴학페이드시간 = Mathf.Max(0.01f, 퇴학페이드시간);
+        두번째효과음대기시간 = Mathf.Max(0f, 두번째효과음대기시간);
+        사라지기전대기시간 = Mathf.Max(0f, 사라지기전대기시간);
     }
 }
