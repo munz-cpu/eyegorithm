@@ -32,6 +32,9 @@ public class 배고파 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Time.timeScale == 0f)
+            return;
+
         if (학생 != null && 학생.남은시간 <= 0f)
         {
             밥달라는불만?.숨기기();

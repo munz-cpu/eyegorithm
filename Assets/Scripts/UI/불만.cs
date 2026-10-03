@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class 불만 : MonoBehaviour
 {
@@ -9,6 +10,11 @@ public class 불만 : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        SortingGroup 표시그룹 = GetComponent<SortingGroup>();
+        if (표시그룹 == null)
+            표시그룹 = gameObject.AddComponent<SortingGroup>();
+        표시그룹.sortAtRoot = true;
+        표시그룹.sortingOrder = 30;
     }
     private void Start()
     {

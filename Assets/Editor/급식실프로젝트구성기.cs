@@ -111,11 +111,11 @@ public static class 급식실프로젝트구성기
         학생소환기 소환기 = 시스템.AddComponent<학생소환기>();
 
         Transform 소환위치 = 위치만들기("학생 소환 위치", 위치들.transform, new Vector3(-7f, -3.1f));
-        Transform 줄시작 = 위치만들기("줄 시작 위치", 위치들.transform, new Vector3(-4.7f, 0.24f));
-        Transform 입구 = 위치만들기("급식실 입구", 위치들.transform, new Vector3(-4.88f, 1.54f));
-        Transform 입구안쪽 = 위치만들기("급식실 입구 안쪽", 위치들.transform, new Vector3(-4.88f, 2.13f));
-        Transform 출구 = 위치만들기("급식실 출구", 위치들.transform, new Vector3(4.45f, 1.54f));
-        Transform 퇴장 = 위치만들기("식사 완료 퇴장 위치", 위치들.transform, new Vector3(4.45f, -4.33f));
+        Transform 줄시작 = 위치만들기("줄 시작 위치", 위치들.transform, new Vector3(-4.7f, -0.96f));
+        Transform 입구 = 위치만들기("급식실 입구", 위치들.transform, new Vector3(-3.34f, 0.56f));
+        Transform 입구안쪽 = 위치만들기("급식실 입구 안쪽", 위치들.transform, new Vector3(-3.34f, 1.15f));
+        Transform 출구 = 위치만들기("급식실 출구", 위치들.transform, new Vector3(8.23f, 0.64f));
+        Transform 퇴장 = 위치만들기("식사 완료 퇴장 위치", 위치들.transform, new Vector3(9.26f, -0.67f));
         Transform[] 좌석 = 좌석만들기(위치들.transform);
 
         Collider2D 이동범위 = GameObject.Find("학생이동범위")?.GetComponent<Collider2D>();
@@ -221,7 +221,7 @@ public static class 급식실프로젝트구성기
             ["캔버스그룹"] = 경고그룹
         });
 
-        GameObject 설정패널 = 설정패널만들기(UI루트.transform, 설정, 설정버튼, out 설정창UI 설정UI);
+        GameObject 설정패널 = 설정패널만들기(UI루트.transform, 설정, 급식실, 소환기, 설정버튼, out 설정창UI 설정UI);
 
         급식실상태UI 상태UI = UI루트.AddComponent<급식실상태UI>();
         직렬화연결(상태UI, new Dictionary<string, Object>
@@ -240,6 +240,47 @@ public static class 급식실프로젝트구성기
             ["소환버튼"] = 소환버튼,
             ["계급드롭다운"] = 계급드롭다운
         });
+
+        GameObject 표시캔버스 = 새오브젝트("UI 표시 버튼 캔버스", 부모, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        Canvas 버튼캔버스 = 표시캔버스.GetComponent<Canvas>();
+        버튼캔버스.renderMode = RenderMode.ScreenSpaceOverlay;
+        버튼캔버스.sortingOrder = 1000;
+        CanvasScaler 버튼스케일러 = 표시캔버스.GetComponent<CanvasScaler>();
+        버튼스케일러.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        버튼스케일러.referenceResolution = new Vector2(1920f, 1080f);
+        버튼스케일러.matchWidthOrHeight = 0.5f;
+        GameObject 눈오브젝트 = 새오브젝트("눈 버튼", 표시캔버스.transform, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        RectTransform 눈영역 = 눈오브젝트.GetComponent<RectTransform>();
+        배치(눈영역, new Vector2(-24f, -24f), new Vector2(76f, 76f), Vector2.one);
+        Image 눈이미지 = 눈오브젝트.GetComponent<Image>();
+        눈이미지.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Image/유아이/눈.png");
+        눈이미지.preserveAspect = true;
+        눈오브젝트.GetComponent<Button>().targetGraphic = 눈이미지;
+
+        Button 일시정지버튼 = 버튼만들기(표시캔버스.transform, "일시정지 버튼", "", new Vector2(-112f, -24f), new Vector2(76f, 76f), Vector2.one, new Color(0.22f, 0.26f, 0.34f, 0.8f));
+        Image 정지왼쪽 = 상태아이콘만들기(일시정지버튼.transform, "정지 왼쪽", 스프라이트찾기("Assets/Image/유아이/일시정지중.png", "일시정지중_0"), new Vector2(-9f, 0f), new Vector2(10f, 34f));
+        Image 정지오른쪽 = 상태아이콘만들기(일시정지버튼.transform, "정지 오른쪽", 스프라이트찾기("Assets/Image/유아이/일시정지중.png", "일시정지중_1"), new Vector2(9f, 0f), new Vector2(10f, 34f));
+        Image 재생아이콘 = 상태아이콘만들기(일시정지버튼.transform, "재생 아이콘", 스프라이트찾기("Assets/Image/유아이/재생중.png", "재생중_0"), Vector2.zero, new Vector2(30f, 35f));
+        재생아이콘.enabled = false;
+        일시정지UI 일시정지 = 일시정지버튼.gameObject.AddComponent<일시정지UI>();
+        직렬화연결(일시정지, new Dictionary<string, Object>
+        {
+            ["버튼"] = 일시정지버튼,
+            ["정지왼쪽"] = 정지왼쪽,
+            ["정지오른쪽"] = 정지오른쪽,
+            ["재생아이콘"] = 재생아이콘
+        });
+
+        UI표시전환 표시전환 = UI루트.AddComponent<UI표시전환>();
+        SerializedObject 표시직렬화 = new(표시전환);
+        SerializedProperty 캔버스목록 = 표시직렬화.FindProperty("canvases");
+        캔버스목록.arraySize = 1;
+        캔버스목록.GetArrayElementAtIndex(0).objectReferenceValue = 캔버스;
+        표시직렬화.FindProperty("toggleButton").objectReferenceValue = 눈오브젝트.GetComponent<Button>();
+        표시직렬화.FindProperty("iconImage").objectReferenceValue = 눈이미지;
+        표시직렬화.FindProperty("visibleIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Image/유아이/눈.png");
+        표시직렬화.FindProperty("hiddenIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Image/유아이/눈깔찌르기.png");
+        표시직렬화.ApplyModifiedPropertiesWithoutUndo();
 
         설정패널.SetActive(false);
         return UI루트;
@@ -261,14 +302,13 @@ public static class 급식실프로젝트구성기
         return 문구;
     }
 
-    private static GameObject 설정패널만들기(Transform 부모, 설정관리자 설정, Button 열기버튼, out 설정창UI 설정UI)
+    private static GameObject 설정패널만들기(Transform 부모, 설정관리자 설정, 급식실관리자 급식실, 학생소환기 소환기, Button 열기버튼, out 설정창UI 설정UI)
     {
         GameObject 패널 = 패널만들기(부모, "설정 패널", new Vector2(-32f, 108f), new Vector2(560f, 690f), new Vector2(1f, 0f), 진한색);
         TMP_Text 제목 = 텍스트만들기(패널.transform, "제목", "시뮬레이션 설정", 34f, TextAlignmentOptions.Center);
         배치(제목.rectTransform, new Vector2(0f, -38f), new Vector2(500f, 52f), new Vector2(0.5f, 1f));
-        Button 닫기 = 버튼만들기(패널.transform, "닫기 버튼", "닫기", new Vector2(-18f, -18f), new Vector2(92f, 44f), new Vector2(1f, 1f), 보조색);
 
-        TMP_Dropdown 큐 = 드롭다운만들기(패널.transform, "큐 종류", new[] { "일반", "FCFS", "라운드 로빈", "최소 실행시간 우선", "우선순위" }, new Vector2(250f, -116f), new Vector2(270f, 48f), new Vector2(0f, 1f));
+        TMP_Dropdown 큐 = 드롭다운만들기(패널.transform, "큐 종류", new[] { "FCFS", "라운드 로빈", "최소 실행시간 우선", "우선순위" }, new Vector2(250f, -116f), new Vector2(270f, 48f), new Vector2(0f, 1f));
         텍스트행(패널.transform, "큐 종류", -116f);
 
         Slider 배경음 = 슬라이더만들기(패널.transform, "BGM 볼륨", 0f, 1f, 0.7f, -186f, false);
@@ -285,13 +325,19 @@ public static class 급식실프로젝트구성기
         텍스트행(패널.transform, "남은 실행시간 표시", -466f);
         GameObject 시간행 = 라운드로빈시간행만들기(패널.transform, out TMP_InputField 시간입력);
         시간행.SetActive(false);
+        Button 초기화버튼 = 버튼만들기(패널.transform, "초기화 버튼", "초기화", new Vector2(20f, -610f), new Vector2(240f, 56f), new Vector2(0f, 1f), 보조색);
+        Button 종료버튼 = 버튼만들기(패널.transform, "종료 버튼", "종료", new Vector2(300f, -610f), new Vector2(240f, 56f), new Vector2(0f, 1f), 보조색);
 
         설정UI = 부모.gameObject.AddComponent<설정창UI>();
         직렬화연결(설정UI, new Dictionary<string, Object>
         {
             ["설정"] = 설정,
+            ["급식실"] = 급식실,
+            ["소환기"] = 소환기,
+            ["카메라"] = Camera.main != null ? Camera.main.GetComponent<카메라확대이동>() : null,
             ["열기버튼"] = 열기버튼,
-            ["닫기버튼"] = 닫기,
+            ["초기화버튼"] = 초기화버튼,
+            ["종료버튼"] = 종료버튼,
             ["설정패널"] = 패널,
             ["큐드롭다운"] = 큐,
             ["라운드로빈시간행"] = 시간행,
@@ -336,8 +382,8 @@ public static class 급식실프로젝트구성기
     {
         Vector3[] 위치 =
         {
-            new(-1.1f, 2.13f), new(1.15f, 2.13f), new(3.3f, 2.13f),
-            new(0f, 3.1f), new(2.2f, 3.1f)
+            new(-0.8f, 1.45f), new(0.5f, 1.45f), new(1.8f, 1.45f),
+            new(3.1f, 1.45f), new(4.4f, 1.45f)
         };
         Transform[] 결과 = new Transform[위치.Length];
 
@@ -523,6 +569,28 @@ public static class 급식실프로젝트구성기
         사각형.pivot = 앵커;
         사각형.anchoredPosition = 위치;
         사각형.sizeDelta = 크기;
+    }
+
+    private static Image 상태아이콘만들기(Transform 부모, string 이름, Sprite 스프라이트, Vector2 위치, Vector2 크기)
+    {
+        GameObject 오브젝트 = 새오브젝트(이름, 부모, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        배치(오브젝트.GetComponent<RectTransform>(), 위치, 크기, Vector2.one * 0.5f);
+        Image 이미지 = 오브젝트.GetComponent<Image>();
+        이미지.sprite = 스프라이트;
+        이미지.preserveAspect = true;
+        이미지.raycastTarget = false;
+        return 이미지;
+    }
+
+    private static Sprite 스프라이트찾기(string 경로, string 이름)
+    {
+        foreach (Object 에셋 in AssetDatabase.LoadAllAssetRepresentationsAtPath(경로))
+        {
+            if (에셋 is Sprite 스프라이트 && 스프라이트.name == 이름)
+                return 스프라이트;
+        }
+
+        return null;
     }
 
     private static void 전체채우기(RectTransform 사각형, Vector2 여백)

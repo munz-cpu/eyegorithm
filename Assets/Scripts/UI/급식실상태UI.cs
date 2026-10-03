@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
@@ -11,10 +13,25 @@ public class 급식실상태UI : MonoBehaviour
     [SerializeField] private TMP_Text 버튼문구;
     [SerializeField] private TMP_Text 불만지수문구;
 
+    private void Update()
+    {
+        if (Time.timeScale == 0f)
+            return;
+
+        Keyboard 키보드 = Keyboard.current;
+        if (설정 == null || 키보드 == null || !키보드.spaceKey.wasPressedThisFrame)
+            return;
+
+        GameObject 선택 = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        TMP_InputField 입력 = 선택 != null ? 선택.GetComponentInParent<TMP_InputField>() : null;
+        if (입력 == null || !입력.isFocused)
+            설정.급식실상태전환();
+    }
+
     private void OnEnable()
     {
         if (열기닫기버튼 != null)
-            열기닫기버튼.onClick.AddListener(설정.급식실상태전환);
+            열기닫기버튼.onClick.AddListener(급식실상태전환);
 
         if (설정 != null)
             설정.설정변경 += 문구갱신;
@@ -28,7 +45,7 @@ public class 급식실상태UI : MonoBehaviour
     private void OnDisable()
     {
         if (열기닫기버튼 != null)
-            열기닫기버튼.onClick.RemoveListener(설정.급식실상태전환);
+            열기닫기버튼.onClick.RemoveListener(급식실상태전환);
 
         if (설정 != null)
             설정.설정변경 -= 문구갱신;
@@ -40,6 +57,12 @@ public class 급식실상태UI : MonoBehaviour
     {
         if (버튼문구 != null && 설정 != null)
             버튼문구.text = 설정.열림 ? "급식실 CLOSE" : "급식실 OPEN";
+    }
+
+    private void 급식실상태전환()
+    {
+        if (Time.timeScale > 0f)
+            설정?.급식실상태전환();
     }
 
     private void 불만지수갱신(int 값)

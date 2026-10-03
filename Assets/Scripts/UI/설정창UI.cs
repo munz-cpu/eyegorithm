@@ -7,8 +7,12 @@ public class 설정창UI : MonoBehaviour
 {
     [Header("연결")]
     [SerializeField] private 설정관리자 설정;
+    [SerializeField] private 급식실관리자 급식실;
+    [SerializeField] private 학생소환기 소환기;
+    [SerializeField] private 카메라확대이동 카메라;
     [SerializeField] private Button 열기버튼;
-    [SerializeField] private Button 닫기버튼;
+    [SerializeField] private Button 초기화버튼;
+    [SerializeField] private Button 종료버튼;
     [SerializeField] private GameObject 설정패널;
 
     [Header("입력")]
@@ -25,19 +29,39 @@ public class 설정창UI : MonoBehaviour
     [SerializeField] private TMP_Text 틱속도값;
     [SerializeField] private TMP_Text 최대인원값;
 
+    private Button 바깥영역버튼;
+
     private void Awake()
     {
         값표시갱신();
         if (설정패널 != null)
+        {
+            GameObject 바깥영역 = new GameObject("설정창 바깥 영역", typeof(RectTransform), typeof(Image), typeof(Button));
+            RectTransform 영역Rect = 바깥영역.GetComponent<RectTransform>();
+            영역Rect.SetParent(설정패널.transform.parent, false);
+            영역Rect.anchorMin = Vector2.zero;
+            영역Rect.anchorMax = Vector2.one;
+            영역Rect.offsetMin = Vector2.zero;
+            영역Rect.offsetMax = Vector2.zero;
+            영역Rect.SetSiblingIndex(설정패널.transform.GetSiblingIndex());
+
+            Image 이미지 = 바깥영역.GetComponent<Image>();
+            이미지.color = Color.clear;
+            바깥영역버튼 = 바깥영역.GetComponent<Button>();
+            바깥영역버튼.onClick.AddListener(닫기);
+            바깥영역.SetActive(false);
             설정패널.SetActive(false);
+        }
     }
 
     private void OnEnable()
     {
         if (열기버튼 != null)
             열기버튼.onClick.AddListener(열기);
-        if (닫기버튼 != null)
-            닫기버튼.onClick.AddListener(닫기);
+        if (초기화버튼 != null)
+            초기화버튼.onClick.AddListener(초기화);
+        if (종료버튼 != null)
+            종료버튼.onClick.AddListener(종료);
 
         if (설정 == null)
             return;
@@ -64,8 +88,10 @@ public class 설정창UI : MonoBehaviour
     {
         if (열기버튼 != null)
             열기버튼.onClick.RemoveListener(열기);
-        if (닫기버튼 != null)
-            닫기버튼.onClick.RemoveListener(닫기);
+        if (초기화버튼 != null)
+            초기화버튼.onClick.RemoveListener(초기화);
+        if (종료버튼 != null)
+            종료버튼.onClick.RemoveListener(종료);
 
         if (설정 == null)
             return;
@@ -91,13 +117,38 @@ public class 설정창UI : MonoBehaviour
     public void 열기()
     {
         if (설정패널 != null)
+        {
+            바깥영역버튼.gameObject.SetActive(true);
             설정패널.SetActive(true);
+        }
     }
 
     public void 닫기()
     {
         if (설정패널 != null)
+        {
             설정패널.SetActive(false);
+            바깥영역버튼.gameObject.SetActive(false);
+        }
+    }
+
+    private void 초기화()
+    {
+        if (라운드로빈시간입력 != null)
+            라운드로빈시간입력.DeactivateInputField();
+        소환기?.시뮬레이션초기화();
+        급식실?.시뮬레이션초기화();
+        설정?.기본값으로초기화();
+        카메라?.화면초기화();
+    }
+
+    private void 종료()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     private void 라운드로빈시간확정(string 값)
@@ -112,7 +163,7 @@ public class 설정창UI : MonoBehaviour
             return;
 
         if (큐드롭다운 != null)
-            큐드롭다운.SetValueWithoutNotify((int)설정.큐종류값);
+            큐드롭다운.SetValueWithoutNotify((int)설정.큐종류값 - 1);
         if (라운드로빈시간행 != null)
             라운드로빈시간행.SetActive(설정.큐종류값 == 큐_타입.라운드로빈);
         if (라운드로빈시간입력 != null && !라운드로빈시간입력.isFocused)

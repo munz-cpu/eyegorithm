@@ -46,6 +46,21 @@ public class 급식실관리자 : MonoBehaviour
     public bool 열림 => 설정 != null && 설정.열림;
     public event Action<int> 불만지수변경;
 
+    public void 시뮬레이션초기화()
+    {
+        StopAllCoroutines();
+        전체학생.Clear();
+        합류대기.Clear();
+        대기열.비우기();
+        if (자리사용중 != null)
+            Array.Clear(자리사용중, 0, 자리사용중.Length);
+        다음도착순서 = 0;
+        입장처리중 = false;
+        전체불만지수 = 0;
+        퇴학효과음소스?.Stop();
+        불만지수변경?.Invoke(0);
+    }
+
     private void Awake()
     {
         자리사용중 = new bool[자리위치.Length];
@@ -75,6 +90,9 @@ public class 급식실관리자 : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f)
+            return;
+
         전체학생.RemoveAll(학생 => 학생 == null);
 
         // 현재 줄 끝에 실제로 도착한 학생만 도착한 순서대로 대기열에 넣는다.
@@ -313,6 +331,7 @@ public class 급식실관리자 : MonoBehaviour
 
         학생.줄서는중 = false;
         학생.식사중 = true;
+        학생.창문뒤표시설정(true);
         줄정렬();
         Vector3 자리 = 자리위치[자리번호].position;
         Vector3 입구 = 급식실입구 != null ? 급식실입구.position : 자리;
@@ -382,9 +401,10 @@ public class 급식실관리자 : MonoBehaviour
             yield break;
         }
 
+        학생.창문앞표시설정();
         if (학생.남은시간 <= 0f)
         {
-            yield return 목표까지이동(학생, 퇴장위치 != null ? 퇴장위치.position : 학생.transform.position + Vector3.down * 3f);
+            yield return 목표까지이동(학생, 퇴장위치 != null ? 퇴장위치.position : 출구 + new Vector3(1f, -1.3f, 0f));
             if (학생 == null)
                 yield break;
 
@@ -394,6 +414,9 @@ public class 급식실관리자 : MonoBehaviour
         else
         {
             yield return 목표까지이동(학생, 출구 + Vector3.down * (학생.충돌반경 + 0.2f));
+            if (학생 == null)
+                yield break;
+            학생.창문뒤표시설정(false);
             학생.식사중 = false;
 
             if (열림)

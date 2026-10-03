@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
@@ -35,6 +36,7 @@ public class 학생정보 : MonoBehaviour
     private SpriteRenderer 게이지배경;
     private SpriteRenderer 게이지채움;
     private SpriteRenderer 정보배경;
+    private SortingGroup 정렬그룹;
     private BoxCollider2D 퇴학버튼;
     private GameObject 퇴학버튼문구;
     private 급식실관리자 급식실;
@@ -58,6 +60,10 @@ public class 학생정보 : MonoBehaviour
 
     private void Awake()
     {
+        정렬그룹 = GetComponent<SortingGroup>();
+        if (정렬그룹 == null)
+            정렬그룹 = gameObject.AddComponent<SortingGroup>();
+        정렬그룹.sortingOrder = 5;
         이동기 = GetComponent<싸돌아댕기기>();
         효과음소스 = GetComponent<AudioSource>();
         충돌체 = GetComponent<CircleCollider2D>();
@@ -81,6 +87,9 @@ public class 학생정보 : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f)
+            return;
+
         if (퇴학중)
             return;
 
@@ -227,6 +236,7 @@ public class 학생정보 : MonoBehaviour
     {
         남은시간 = Mathf.Max(0f, 남은시간 - Mathf.Max(0f, 경과시간));
         게이지갱신();
+        남은시간문구갱신();
         return 남은시간 <= 0f;
     }
 
@@ -280,6 +290,18 @@ public class 학생정보 : MonoBehaviour
         급식실 = 관리자;
     }
 
+    public void 창문뒤표시설정(bool 식사중표시)
+    {
+        if (정렬그룹 != null)
+            정렬그룹.sortingOrder = 식사중표시 ? -1 : 5;
+    }
+
+    public void 창문앞표시설정()
+    {
+        if (정렬그룹 != null)
+            정렬그룹.sortingOrder = 22;
+    }
+
     public string 계급표시이름()
     {
         return 계급 switch
@@ -328,7 +350,16 @@ public class 학생정보 : MonoBehaviour
             이름표.text = $"이름  {학생이름}\n계급  {계급표시이름()}\n먹는 시간  {소요시간:0.0}초";
 
         if (남은시간표 != null)
-            남은시간표.gameObject.SetActive(false);
+        {
+            남은시간표.gameObject.SetActive(남은시간표시);
+            남은시간문구갱신();
+        }
+    }
+
+    private void 남은시간문구갱신()
+    {
+        if (남은시간표 != null && 남은시간표.gameObject.activeSelf)
+            남은시간표.text = $"{남은시간:0.0}초";
     }
 
     private void 표시요소준비()
@@ -341,22 +372,28 @@ public class 학생정보 : MonoBehaviour
 
         if (이름표 != null)
         {
+            GameObject 상태창 = new GameObject("학생 상태창");
+            상태창.transform.SetParent(transform, false);
+            SortingGroup 상태창그룹 = 상태창.AddComponent<SortingGroup>();
+            상태창그룹.sortAtRoot = true;
+            상태창그룹.sortingOrder = 31;
+            이름표.transform.SetParent(상태창.transform, false);
             이름표.transform.localPosition = new Vector3(0f, 0.97f, 0f);
             이름표.rectTransform.sizeDelta = new Vector2(9f, 3f);
             이름표.fontSize = 10f;
             이름표.alignment = TextAlignmentOptions.Center;
             이름표.gameObject.SetActive(false);
-            정보배경 = 사각형만들기("학생 정보 배경", new Vector3(0f, 0.97f, 0f), new Vector3(2.4f, 0.86f, 1f), new Color(0.12f, 0.15f, 0.2f, 0.96f), 19);
+            정보배경 = 사각형만들기("학생 정보 배경", new Vector3(0f, 0.97f, 0f), new Vector3(2.4f, 0.86f, 1f), new Color(0.12f, 0.15f, 0.2f, 0.96f), 19, 상태창.transform);
             정보배경.gameObject.SetActive(false);
 
-            SpriteRenderer 버튼배경 = 사각형만들기("너 퇴학 버튼", new Vector3(0f, 0.35f, 0f), new Vector3(1.7f, 0.32f, 1f), new Color(0.7f, 0.13f, 0.15f, 1f), 22);
+            SpriteRenderer 버튼배경 = 사각형만들기("너 퇴학 버튼", new Vector3(0f, 0.35f, 0f), new Vector3(1.7f, 0.32f, 1f), new Color(0.7f, 0.13f, 0.15f, 1f), 22, 상태창.transform);
             퇴학버튼 = 버튼배경.gameObject.AddComponent<BoxCollider2D>();
             퇴학버튼.isTrigger = true;
             퇴학버튼.size = Vector2.one;
             버튼배경.gameObject.SetActive(false);
 
             GameObject 버튼문구 = new GameObject("너 퇴학 문구");
-            버튼문구.transform.SetParent(transform, false);
+            버튼문구.transform.SetParent(상태창.transform, false);
             TextMeshPro 문구 = 버튼문구.AddComponent<TextMeshPro>();
             문구.font = 이름표.font;
             문구.text = "너 퇴학";
@@ -371,10 +408,10 @@ public class 학생정보 : MonoBehaviour
         }
     }
 
-    private SpriteRenderer 사각형만들기(string 이름, Vector3 위치, Vector3 크기, Color 색, int 정렬순서)
+    private SpriteRenderer 사각형만들기(string 이름, Vector3 위치, Vector3 크기, Color 색, int 정렬순서, Transform 부모 = null)
     {
         GameObject 오브젝트 = new GameObject(이름);
-        오브젝트.transform.SetParent(transform, false);
+        오브젝트.transform.SetParent(부모 != null ? 부모 : transform, false);
         오브젝트.transform.localPosition = 위치;
         오브젝트.transform.localScale = 크기;
         SpriteRenderer 렌더러 = 오브젝트.AddComponent<SpriteRenderer>();

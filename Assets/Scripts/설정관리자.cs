@@ -3,11 +3,10 @@ using UnityEngine;
 
 public enum 큐_타입
 {
-    일반,
-    FCFS,
-    라운드로빈,
-    최소실행시간우선,
-    우선순위
+    FCFS = 1,
+    라운드로빈 = 2,
+    최소실행시간우선 = 3,
+    우선순위 = 4
 }
 
 public enum 학생계급
@@ -25,7 +24,7 @@ public class 설정관리자 : MonoBehaviour
     public const int 절대최대인원 = 15;
 
     [Header("스케줄링")]
-    [SerializeField] private 큐_타입 큐종류 = 큐_타입.일반;
+    [SerializeField] private 큐_타입 큐종류 = 큐_타입.FCFS;
     [SerializeField, Min(0.1f)] private float 라운드로빈퀀텀 = 2f;
     [SerializeField, Range(0.25f, 3f)] private float 틱속도 = 1f;
 
@@ -42,7 +41,7 @@ public class 설정관리자 : MonoBehaviour
     public event Action 설정변경;
     public event Action<bool> 급식실상태변경;
 
-    public 큐_타입 큐종류값 => 큐종류;
+    public 큐_타입 큐종류값 => 큐종류 == 0 ? 큐_타입.FCFS : 큐종류;
     public float 퀀텀 => 라운드로빈퀀텀;
     public float 틱배율 => 틱속도;
     public bool 열림 => 급식실열림;
@@ -53,6 +52,8 @@ public class 설정관리자 : MonoBehaviour
 
     private void Awake()
     {
+        if (큐종류 == 0)
+            큐종류 = 큐_타입.FCFS;
         적용();
     }
 
@@ -67,7 +68,7 @@ public class 설정관리자 : MonoBehaviour
     // 드롭다운의 번호를 큐 종류로 변환한다.
     public void 큐종류설정(int 값)
     {
-        큐종류 = (큐_타입)Mathf.Clamp(값, 0, Enum.GetValues(typeof(큐_타입)).Length - 1);
+        큐종류 = (큐_타입)(Mathf.Clamp(값, 0, Enum.GetValues(typeof(큐_타입)).Length - 1) + 1);
         설정변경?.Invoke();
     }
 
@@ -113,6 +114,22 @@ public class 설정관리자 : MonoBehaviour
         설정변경?.Invoke();
     }
 
+    public void 기본값으로초기화()
+    {
+        bool 열려있었음 = 급식실열림;
+        급식실열림 = false;
+        큐종류 = 큐_타입.FCFS;
+        라운드로빈퀀텀 = 2f;
+        틱속도 = 1f;
+        최대인원 = 절대최대인원;
+        남은시간표시 = true;
+        배경음볼륨 = 0.7f;
+        학생효과음볼륨 = 1f;
+        if (열려있었음)
+            급식실상태변경?.Invoke(false);
+        적용();
+    }
+
     private void 적용()
     {
         if (배경음소스 != null)
@@ -123,6 +140,8 @@ public class 설정관리자 : MonoBehaviour
 
     private void OnValidate()
     {
+        if (큐종류 == 0)
+            큐종류 = 큐_타입.FCFS;
         라운드로빈퀀텀 = Mathf.Max(0.1f, 라운드로빈퀀텀);
         최대인원 = Mathf.Clamp(최대인원, 1, 절대최대인원);
     }

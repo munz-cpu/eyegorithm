@@ -43,6 +43,26 @@ public class 학생소환기 : MonoBehaviour
     private readonly HashSet<int> 사용중인소환자리 = new();
     private int 소환중인원;
 
+    public void 시뮬레이션초기화()
+    {
+        StopAllCoroutines();
+        소환중인원 = 0;
+        소환중인특수계급.Clear();
+        사용중인소환자리.Clear();
+
+        if (학생부모 == null)
+            return;
+
+        foreach (Transform 자식 in 학생부모)
+        {
+            if (자식.TryGetComponent(out 학생정보 학생))
+            {
+                학생.gameObject.SetActive(false);
+                Destroy(학생.gameObject);
+            }
+        }
+    }
+
     private void Awake()
     {
         소환할계급 = (학생계급)Mathf.Clamp((int)소환할계급, 1, 5);
@@ -57,6 +77,9 @@ public class 학생소환기 : MonoBehaviour
     // 현재 선택된 계급의 학생을 한 명 만들고 아래쪽 등장 연출을 시작한다.
     public void 학생소환()
     {
+        if (Time.timeScale == 0f)
+            return;
+
         if (급식실 == null || 학생프리팹 == null || 소환위치 == null)
             return;
 
